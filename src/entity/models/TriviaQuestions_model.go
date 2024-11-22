@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type TriviaQuestion struct {
+type TriviaQuestionsModel struct {
 	gorm.Model
 	TriviaID   uint      `gorm:"primaryKey"`
 	QuestionID uint      `gorm:"primaryKey"`

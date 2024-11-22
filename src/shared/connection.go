@@ -28,7 +28,8 @@ func migration(db *gorm.DB) {
 		&models.TriviaModel{},
 		&models.QuestionModel{},
 		&models.AnswerModel{},
-		&models.TriviaQuestion{},
+		&models.ScoreModel{},
+		&models.TriviaQuestionsModel{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
