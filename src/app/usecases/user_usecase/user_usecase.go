@@ -6,16 +6,16 @@ import (
 	"talana_prueba_tecnica/src/entity/models"
 	"talana_prueba_tecnica/src/entity/requests"
 	"talana_prueba_tecnica/src/entity/responses"
-	"talana_prueba_tecnica/src/infraestructure/repository"
+	repository "talana_prueba_tecnica/src/infraestructure/repository/user_repository"
 
 	"github.com/sirupsen/logrus"
 )
 
 type UserUseCase struct {
-	repository repository.UserRepositoryInteface
+	repository repository.UserRepositoryInterface
 }
 
-func NewUserUseCase(repository repository.UserRepositoryInteface) *UserUseCase {
+func NewUserUseCase(repository repository.UserRepositoryInterface) *UserUseCase {
 	return &UserUseCase{
 		repository: repository,
 	}

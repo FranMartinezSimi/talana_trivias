@@ -4,8 +4,10 @@ import "gorm.io/gorm"
 
 type QuestionModel struct {
 	gorm.Model
-	Question string        `gorm:"size:255;not null"`
-	Enabled  bool          `gorm:"default:true"`
-	TriviaID uint          `gorm:"not null"` // Clave foránea para TriviaModel
-	Answer   []AnswerModel `gorm:"foreignKey:QuestionID"`
+	ID            uint          `gorm:"primaryKey,autoIncrement,not null"`
+	Question      string        `gorm:"size:255;not null"`
+	Options       []OptionModel `gorm:"foreignKey:QuestionID"`
+	CorrectOption uint          `gorm:"not null"`
+	Difficulty    string        `gorm:"type:VARCHAR(10);not null;check:difficulty IN ('facil', 'medio', 'dificil')"`
+	Points        int           `gorm:"not null"`
 }
