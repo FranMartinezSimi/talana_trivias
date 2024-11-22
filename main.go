@@ -1,17 +1,20 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
+	"log"
 	"talana_prueba_tecnica/src/shared"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	e := echo.New()
+	log.Println("Starting server...")
+	e := fiber.New()
 	envs := shared.GetEnvs()
 	shared.Init()
 
-	err := e.Start(":" + envs["PORT"])
+	err := e.Listen(":" + envs["PORT"])
 	if err != nil {
-		e.Logger.Fatal(err)
+		log.Fatalf("Error starting server: %v", err)
 	}
 }

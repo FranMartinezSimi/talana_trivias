@@ -1,9 +1,10 @@
 package shared
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func GetEnvs() map[string]string {

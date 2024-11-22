@@ -1,10 +1,11 @@
 package shared
 
 import (
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"talana_prueba_tecnica/src/entity/models"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var Env = GetEnvs()
