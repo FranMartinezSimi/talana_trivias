@@ -12,12 +12,12 @@ import (
 func UserModule(app *fiber.App) {
 	db := shared.Init()
 	userRepo := repository.NewUserRepository(db)
-	userUseCase := usecases.NewUserUseCase(*userRepo)
+	userUseCase := usecases.NewUserUseCase(userRepo)
 	userHandler := handlers.NewUserHandler(*userUseCase)
 
 	app.Get("/users", userHandler.GetAllUsers)
-	app.Get("/users/:id", GetUser)
-	app.Post("/users", CreateUser)
-	app.Put("/users/:id", UpdateUser)
-	app.Delete("/users/:id", DeleteUser)
+	app.Get("/users/:id", userHandler.GetUserByID)
+	app.Post("/users", userHandler.CreateUser)
+	app.Put("/users/:id", userHandler.UpdateUser)
+	app.Delete("/users/:id", userHandler.DeleteUser)
 }

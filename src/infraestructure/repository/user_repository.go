@@ -14,9 +14,10 @@ type UserRepository struct {
 }
 
 func NewUserRepository(gorm *gorm.DB) *UserRepository {
-	return &UserRepository{gorm}
+	return &UserRepository{
+		gorm: gorm,
+	}
 }
-
 func (r *UserRepository) FindAll(ctx context.Context) ([]models.UserModel, error) {
 	log.WithContext(ctx).Println("finding all users")
 	var users []models.UserModel
@@ -64,17 +65,32 @@ func (r *UserRepository) Create(ctx context.Context, user *models.UserModel) err
 	return nil
 }
 
-func (r *UserRepository) Update(ctx context.Context, user *models.UserModel) error {
+func (r *UserRepository) Update(ctx context.Context, user *models.UserModel, id uint) error {
 	log.WithContext(ctx).Println("updating user")
 
 	log.Info("updating user")
 
-	res := r.gorm.WithContext(ctx).Save(user)
+	res := r.gorm.WithContext(ctx).Model(&models.UserModel{}).Where("id = ?", id).Updates(user)
 	if res.Error != nil {
 		log.Error("Error updating user")
 		return res.Error
 	}
 
 	log.WithError(res.Error).Info("user updated")
+	return nil
+}
+
+func (r *UserRepository) Delete(ctx context.Context, id uint) error {
+	log.WithContext(ctx).Println("deleting user")
+
+	log.Info("deleting user")
+
+	res := r.gorm.WithContext(ctx).Delete(&models.UserModel{}, id)
+	if res.Error != nil {
+		log.Error("Error deleting user")
+		return res.Error
+	}
+
+	log.WithError(res.Error).Info("user deleted")
 	return nil
 }

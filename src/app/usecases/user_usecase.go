@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 	"talana_prueba_tecnica/src/entity/models"
 	"talana_prueba_tecnica/src/entity/requests"
 	"talana_prueba_tecnica/src/entity/responses"
@@ -11,10 +12,10 @@ import (
 )
 
 type UserUseCase struct {
-	repository repository.UserRepository
+	repository repository.UserRepositoryInteface
 }
 
-func NewUserUseCase(repository repository.UserRepository) *UserUseCase {
+func NewUserUseCase(repository repository.UserRepositoryInteface) *UserUseCase {
 	return &UserUseCase{
 		repository: repository,
 	}
@@ -89,18 +90,43 @@ func (u *UserUseCase) UpdateUser(ctx context.Context, id uint, user requests.Upd
 	log := logrus.WithContext(ctx)
 	log.Info("Update user usecase")
 
-	userModel := models.UserModel{
-		Name:  user.Name,
-		Email: user.Email,
+	existingUser, err := u.repository.FindByID(ctx, id)
+	if err != nil {
+		log.WithError(err).Error("Error finding user")
+		return fmt.Errorf("user with ID %d not found: %w", id, err)
 	}
 
-	err := u.repository.Update(ctx, &userModel)
+	fmt.Print(existingUser)
+	existingUser.Name = user.Name
+	existingUser.Email = user.Email
 
+	err = u.repository.Update(ctx, existingUser, id)
 	if err != nil {
 		log.WithError(err).Error("Error updating user")
-		return err
+		return fmt.Errorf("error updating user: %w", err)
 	}
 
 	log.Info("User updated")
+	return nil
+}
+
+func (u *UserUseCase) DeleteUser(ctx context.Context, id uint) error {
+	log := logrus.WithContext(ctx)
+	log.Info("Delete user usecase")
+
+	findingUser, err := u.repository.FindByID(ctx, id)
+	if err != nil {
+		log.WithError(err).Error("Error finding user")
+		return fmt.Errorf("user with ID %d not found: %w", id, err)
+	}
+
+	err = u.repository.Delete(ctx, findingUser.ID)
+
+	if err != nil {
+		log.WithError(err).Error("Error deleting user")
+		return err
+	}
+
+	log.Info("User deleted")
 	return nil
 }
