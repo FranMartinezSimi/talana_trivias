@@ -7,17 +7,23 @@ import (
 	"talana_prueba_tecnica/src/entity/requests"
 	"talana_prueba_tecnica/src/entity/responses"
 	triviarepository "talana_prueba_tecnica/src/infraestructure/repository/trivia_repository"
+	repository "talana_prueba_tecnica/src/infraestructure/repository/user_repository"
 
 	"github.com/sirupsen/logrus"
 )
 
 type TriviaUseCase struct {
 	triviaRepository triviarepository.TriviaRepositoryInterface
+	userRepository   repository.UserRepositoryInterface
 }
 
-func NewTriviaUseCase(triviaRepository triviarepository.TriviaRepositoryInterface) *TriviaUseCase {
+func NewTriviaUseCase(
+	triviaRepository triviarepository.TriviaRepositoryInterface,
+	userRepository repository.UserRepositoryInterface,
+) *TriviaUseCase {
 	return &TriviaUseCase{
 		triviaRepository: triviaRepository,
+		userRepository:   userRepository,
 	}
 }
 
@@ -197,176 +203,28 @@ func (u *TriviaUseCase) DeleteTrivia(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (u *TriviaUseCase) SaveParticipation(ctx context.Context, req *requests.SaveParticipationRequest) error {
+func (u *TriviaUseCase) AssignUserToTrivia(ctx context.Context, TriviaID, UserID uint) error {
 	log := logrus.WithContext(ctx)
-	log.Info("Saving participation usecase")
+	log.Infof("Assigning user ID: %d to trivia ID: %d usecase", UserID, TriviaID)
 
-	var score int
-	var answers []models.Answer
-
-	for _, answer := range req.Answers {
-		question, err := u.triviaRepository.FindQuestionByID(ctx, answer.QuestionID)
-		if err != nil {
-			log.WithError(err).Errorf("Error finding question ID: %d", answer.QuestionID)
-			return err
-		}
-
-		isCorrect := question.CorrectOption == answer.SelectedOption
-		if isCorrect {
-			switch question.Difficulty {
-			case "facil":
-				score += 1
-			case "medio":
-				score += 2
-			case "dificil":
-				score += 3
-			}
-		}
-
-		answers = append(answers, models.Answer{
-			QuestionID:     answer.QuestionID,
-			SelectedOption: answer.SelectedOption,
-			IsCorrect:      isCorrect,
-		})
-	}
-
-	participation := &models.Participation{
-		UserID:   req.UserID,
-		TriviaID: req.TriviaID,
-		Score:    score,
-		Answers:  answers,
-	}
-
-	err := u.triviaRepository.SaveParticipation(ctx, participation)
+	trivia, err := u.triviaRepository.FindByID(ctx, TriviaID)
 	if err != nil {
-		log.WithError(err).Error("Error saving participation in repository")
+		log.WithError(err).Error("Error finding trivia for assigning user in repository")
 		return err
 	}
 
-	log.Info("Participation saved successfully")
+	user, err := u.userRepository.FindByID(ctx, UserID)
+	if err != nil {
+		log.WithError(err).Error("Error finding user for assigning to trivia in repository")
+		return err
+	}
+
+	err = u.triviaRepository.AssignUserToTrivia(ctx, trivia.ID, user.ID)
+	if err != nil {
+		log.WithError(err).Error("Error assigning user to trivia in repository")
+		return err
+	}
+
+	log.Info("User assigned to trivia successfully")
 	return nil
 }
-
-func (u *TriviaUseCase) GetUserScore(ctx context.Context, triviaID, userID uint) (responses.UserScoreResponse, error) {
-	log := logrus.WithContext(ctx)
-	log.Infof("Getting user score for trivia ID: %d and user ID: %d usecase", triviaID, userID)
-
-	participation, err := u.triviaRepository.GetUserScore(ctx, triviaID, userID)
-	if err != nil {
-		log.WithError(err).Error("Error getting user score in repository")
-		return responses.UserScoreResponse{}, err
-	}
-
-	correctAnswers := 0
-	for _, answer := range participation.Answers {
-		if answer.IsCorrect {
-			correctAnswers++
-		}
-	}
-
-	// Crear la respuesta
-	response := responses.UserScoreResponse{
-		TriviaID:       participation.TriviaID,
-		UserID:         participation.UserID,
-		Score:          participation.Score,
-		CorrectAnswers: correctAnswers,
-		TotalQuestions: len(participation.Answers),
-	}
-
-	log.Info("User score retrieved successfully")
-	return response, nil
-}
-
-/*
-*** ADDED CODE ***
-TODO: Implement the PlayTrivia and SubmitAnswers methods
-// */
-// func (u *TriviaUseCase) PlayTrivia(ctx context.Context, triviaID uint) (responses.PlayTriviaResponse, error) {
-// 	log := logrus.WithContext(ctx)
-// 	log.Infof("Preparing trivia for play with ID: %d usecase", triviaID)
-
-// 	trivia, err := u.triviaRepository.FindByID(ctx, triviaID)
-// 	if err != nil {
-// 		log.WithError(err).Error("Error finding trivia for play in repository")
-// 		return responses.PlayTriviaResponse{}, err
-// 	}
-
-// 	var questions []responses.QuestionResponse
-// 	for _, question := range trivia.Questions {
-// 		var options []responses.OptionResponse
-// 		for _, option := range question.Options {
-// 			options = append(options, responses.OptionResponse{
-// 				ID:     option.ID,
-// 				Option: option.Text,
-// 			})
-// 		}
-// 		questions = append(questions, responses.QuestionResponse{
-// 			ID:         question.ID,
-// 			Question:   question.Text,
-// 			Options:    options,
-// 			Difficulty: question.Difficulty,
-// 		})
-// 	}
-
-// 	response := responses.PlayTriviaResponse{
-// 		ID:          trivia.ID,
-// 		Name:        trivia.Name,
-// 		Description: trivia.Description,
-// 		Questions:   questions,
-// 	}
-
-// 	log.Info("Trivia prepared successfully for play")
-// 	return response, nil
-// }
-
-// func (u *TriviaUseCase) SubmitAnswers(ctx context.Context, triviaID uint, req *requests.SubmitAnswersRequest) (responses.SubmitAnswersResponse, error) {
-// 	log := logrus.WithContext(ctx)
-// 	log.Infof("Submitting answers for trivia ID: %d usecase", triviaID)
-
-// 	var score int
-// 	var correctAnswers int
-
-// 	for _, answer := range req.Responses {
-// 		question, err := u.triviaRepository.FindQuestionByID(ctx, answer.QuestionID)
-// 		if err != nil {
-// 			log.WithError(err).Errorf("Error finding question ID: %d", answer.QuestionID)
-// 			return responses.SubmitAnswersResponse{}, err
-// 		}
-
-// 		if question.CorrectOption == answer.SelectedOption {
-// 			correctAnswers++
-// 			switch question.Difficulty {
-// 			case "facil":
-// 				score += 1
-// 			case "medio":
-// 				score += 2
-// 			case "dificil":
-// 				score += 3
-// 			}
-// 		}
-// 	}
-
-// 	participation := &models.Participation{
-// 		UserID:   req.UserID,
-// 		TriviaID: triviaID,
-// 		Score:    score,
-// 		Answers:  req.Responses,
-// 	}
-
-// 	err := u.triviaRepository.SaveParticipation(ctx, participation)
-// 	if err != nil {
-// 		log.WithError(err).Error("Error saving participation in repository")
-// 		return responses.SubmitAnswersResponse{}, err
-// 	}
-
-// 	response := responses.SubmitAnswersResponse{
-// 		TriviaID:       triviaID,
-// 		UserID:         req.UserID,
-// 		CorrectAnswers: correctAnswers,
-// 		TotalQuestions: len(req.Responses),
-// 		Score:          score,
-// 	}
-
-// 	log.Info("Answers submitted successfully")
-// 	return response, nil
-// }

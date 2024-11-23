@@ -131,3 +131,43 @@ func (r *TriviaRepository) FindQuestionByID(ctx context.Context, questionID uint
 	log.Info("Question found successfully")
 	return question, nil
 }
+
+func (r *TriviaRepository) AssignUserToTrivia(ctx context.Context, triviaID uint, userID uint) error {
+	log := logrus.WithContext(ctx)
+	log.Infof("Assigning user ID %d to trivia ID %d", userID, triviaID)
+
+	triviaUser := models.TriviaUser{
+		TriviaID: triviaID,
+		UserID:   userID,
+	}
+
+	err := r.db.Create(&triviaUser).Error
+	if err != nil {
+		log.WithError(err).Error("Error assigning user to trivia")
+		return err
+	}
+
+	log.Info("User assigned to trivia successfully")
+	return nil
+}
+
+func (r *TriviaRepository) GetTriviaRanking(ctx context.Context, triviaID uint) ([]models.Ranking, error) {
+	log := logrus.WithContext(ctx)
+	log.Infof("Getting ranking for trivia ID %d", triviaID)
+
+	var rankings []models.Ranking
+	err := r.db.Table("participations").
+		Select("user_id, SUM(score) as total_score").
+		Where("trivia_id = ?", triviaID).
+		Group("user_id").
+		Order("total_score DESC").
+		Find(&rankings).Error
+
+	if err != nil {
+		log.WithError(err).Error("Error retrieving trivia ranking")
+		return nil, err
+	}
+
+	log.Info("Trivia ranking retrieved successfully")
+	return rankings, nil
+}
