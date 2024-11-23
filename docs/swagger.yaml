@@ -1,0 +1,552 @@
+basePath: /
+definitions:
+  requests.CreateQuestionRequest:
+    properties:
+      correct_option:
+        type: integer
+      difficulty:
+        type: string
+      options:
+        items:
+          type: string
+        type: array
+      points:
+        type: integer
+      question:
+        type: string
+    type: object
+  requests.CreateTriviaRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      question_ids:
+        items:
+          type: integer
+        type: array
+      user_ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  requests.RegisterUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  requests.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.OptionResponse:
+    properties:
+      id:
+        type: integer
+      option:
+        type: string
+    type: object
+  responses.QuestionResponse:
+    properties:
+      correct_option:
+        type: integer
+      difficulty:
+        type: string
+      id:
+        type: integer
+      options:
+        items:
+          $ref: '#/definitions/responses.OptionResponse'
+        type: array
+      question:
+        type: string
+    type: object
+  responses.TriviaResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/responses.QuestionResponse'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/responses.UserResponse'
+        type: array
+    type: object
+  responses.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API para la gestión de trivias, destinada a ser prueba tecnica de juan
+    martinez simi, para talana
+  title: Talana prueba tecnica
+  version: "1.0"
+paths:
+  /questions:
+    post:
+      consumes:
+      - application/json
+      description: Add a new question to the system
+      parameters:
+      - description: Question details
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Question created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new question
+      tags:
+      - Questions
+  /questions/{id}:
+    delete:
+      description: Remove a question from the system
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Question deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid question ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a question
+      tags:
+      - Questions
+    get:
+      description: Retrieve details of a specific question by its ID
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Question details
+          schema:
+            $ref: '#/definitions/responses.QuestionResponse'
+        "400":
+          description: Invalid question ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get question by ID
+      tags:
+      - Questions
+    put:
+      consumes:
+      - application/json
+      description: Update the details of an existing question
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated question details
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateQuestionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Question updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or question ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a question
+      tags:
+      - Questions
+  /questions/search:
+    get:
+      description: Search for questions using a text query
+      parameters:
+      - description: Search query
+        in: query
+        name: search
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Search results
+          schema:
+            $ref: '#/definitions/responses.QuestionResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Full text search for questions
+      tags:
+      - Questions
+  /trivias:
+    get:
+      description: Retrieve a list of all available trivias
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trivias
+          schema:
+            items:
+              $ref: '#/definitions/responses.TriviaResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all trivias
+      tags:
+      - Trivias
+    post:
+      consumes:
+      - application/json
+      description: Add a new trivia to the system
+      parameters:
+      - description: Trivia details
+        in: body
+        name: trivia
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateTriviaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Trivia created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new trivia
+      tags:
+      - Trivias
+  /trivias/{id}:
+    delete:
+      description: Remove a trivia from the system
+      parameters:
+      - description: Trivia ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trivia deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid trivia ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a trivia
+      tags:
+      - Trivias
+    get:
+      description: Retrieve details of a specific trivia by its ID
+      parameters:
+      - description: Trivia ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trivia details
+          schema:
+            $ref: '#/definitions/responses.TriviaResponse'
+        "400":
+          description: Invalid trivia ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get trivia by ID
+      tags:
+      - Trivias
+    put:
+      consumes:
+      - application/json
+      description: Update the details of an existing trivia
+      parameters:
+      - description: Trivia ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated trivia details
+        in: body
+        name: trivia
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateTriviaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trivia updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or trivia ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a trivia
+      tags:
+      - Trivias
+  /users:
+    get:
+      description: Retrieve a list of all registered users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              $ref: '#/definitions/responses.UserResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Register a new user in the system
+      parameters:
+      - description: User details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      description: Remove a user from the system
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      description: Retrieve a specific user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            $ref: '#/definitions/responses.UserResponse'
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update the details of an existing user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated user details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a user
+      tags:
+      - Users
+swagger: "2.0"

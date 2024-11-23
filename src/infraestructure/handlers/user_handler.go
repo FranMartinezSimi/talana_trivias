@@ -17,6 +17,13 @@ func NewUserHandler(usecase usecases.UserUseCaseInterface) UserHandler {
 	return UserHandler{usecase: usecase}
 }
 
+// @Summary Get all users
+// @Description Retrieve a list of all registered users
+// @Tags Users
+// @Produce json
+// @Success 200 {object} []responses.UserResponse "List of users"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /users [get]
 func (h *UserHandler) GetAllUsers(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Get all users handler")
@@ -31,6 +38,15 @@ func (h *UserHandler) GetAllUsers(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": result})
 }
 
+// @Summary Get user by ID
+// @Description Retrieve a specific user by their ID
+// @Tags Users
+// @Param id path uint true "User ID"
+// @Produce json
+// @Success 200 {object} responses.UserResponse "User details"
+// @Failure 400 {object} map[string]interface{} "Invalid user ID"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /users/{id} [get]
 func (h *UserHandler) GetUserByID(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Get user handler")
@@ -56,6 +72,16 @@ func (h *UserHandler) GetUserByID(ctx *fiber.Ctx) error {
 	})
 }
 
+// @Summary Create a new user
+// @Description Register a new user in the system
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body requests.RegisterUserRequest true "User details"
+// @Success 201 {object} map[string]interface{} "User created"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /users [post]
 func (h *UserHandler) CreateUser(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Create user handler")
@@ -78,6 +104,17 @@ func (h *UserHandler) CreateUser(ctx *fiber.Ctx) error {
 	})
 }
 
+// @Summary Update a user
+// @Description Update the details of an existing user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param id path uint true "User ID"
+// @Param user body requests.UpdateUserRequest true "Updated user details"
+// @Success 200 {object} map[string]interface{} "User updated"
+// @Failure 400 {object} map[string]interface{} "Invalid request or ID"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /users/{id} [put]
 func (h *UserHandler) UpdateUser(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Update user handler")
@@ -111,6 +148,15 @@ func (h *UserHandler) UpdateUser(ctx *fiber.Ctx) error {
 	})
 }
 
+// @Summary Delete a user
+// @Description Remove a user from the system
+// @Tags Users
+// @Param id path uint true "User ID"
+// @Produce json
+// @Success 200 {object} map[string]interface{} "User deleted"
+// @Failure 400 {object} map[string]interface{} "Invalid user ID"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /users/{id} [delete]
 func (h *UserHandler) DeleteUser(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Delete user handler")

@@ -18,6 +18,13 @@ func NewTriviaHandler(useCase triviausecase.TriviaUseCaseInterface) *TriviaHandl
 	}
 }
 
+// @Summary Get all trivias
+// @Description Retrieve a list of all available trivias
+// @Tags Trivias
+// @Produce json
+// @Success 200 {object} []responses.TriviaResponse "List of trivias"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /trivias [get]
 func (h *TriviaHandler) GetAllTrivias(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Get all trivias handler")
@@ -32,6 +39,15 @@ func (h *TriviaHandler) GetAllTrivias(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": result})
 }
 
+// @Summary Get trivia by ID
+// @Description Retrieve details of a specific trivia by its ID
+// @Tags Trivias
+// @Param id path uint true "Trivia ID"
+// @Produce json
+// @Success 200 {object} responses.TriviaResponse "Trivia details"
+// @Failure 400 {object} map[string]interface{} "Invalid trivia ID"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /trivias/{id} [get]
 func (h *TriviaHandler) GetTriviaByID(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Get trivia by ID handler")
@@ -52,6 +68,16 @@ func (h *TriviaHandler) GetTriviaByID(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": result})
 }
 
+// @Summary Create a new trivia
+// @Description Add a new trivia to the system
+// @Tags Trivias
+// @Accept json
+// @Produce json
+// @Param trivia body requests.CreateTriviaRequest true "Trivia details"
+// @Success 201 {object} map[string]interface{} "Trivia created"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /trivias [post]
 func (h *TriviaHandler) CreateTrivia(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Create trivia handler")
@@ -71,6 +97,17 @@ func (h *TriviaHandler) CreateTrivia(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Trivia created successfully"})
 }
 
+// @Summary Update a trivia
+// @Description Update the details of an existing trivia
+// @Tags Trivias
+// @Accept json
+// @Produce json
+// @Param id path uint true "Trivia ID"
+// @Param trivia body requests.CreateTriviaRequest true "Updated trivia details"
+// @Success 200 {object} map[string]interface{} "Trivia updated"
+// @Failure 400 {object} map[string]interface{} "Invalid request or trivia ID"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /trivias/{id} [put]
 func (h *TriviaHandler) UpdateTrivia(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Update trivia handler")
@@ -96,6 +133,15 @@ func (h *TriviaHandler) UpdateTrivia(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Trivia updated successfully"})
 }
 
+// @Summary Delete a trivia
+// @Description Remove a trivia from the system
+// @Tags Trivias
+// @Param id path uint true "Trivia ID"
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Trivia deleted"
+// @Failure 400 {object} map[string]interface{} "Invalid trivia ID"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /trivias/{id} [delete]
 func (h *TriviaHandler) DeleteTrivia(ctx *fiber.Ctx) error {
 	log := logrus.WithContext(ctx.Context())
 	log.Info("Delete trivia handler")
