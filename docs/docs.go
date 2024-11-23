@@ -15,6 +15,107 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/games/trivias/{id}/answers": {
+            "post": {
+                "description": "Submit answers for a specific trivia and calculate the user's score",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Games"
+                ],
+                "summary": "Submit answers for a trivia",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Trivia ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User answers",
+                        "name": "answers",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitAnswersRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User score and details",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitAnswersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or trivia ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/games/trivias/{id}/questions": {
+            "get": {
+                "description": "Retrieve all questions for a specific trivia",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Games"
+                ],
+                "summary": "Get questions for a trivia",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Trivia ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Questions for the trivia",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.QuestionResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trivia ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/questions": {
             "post": {
                 "description": "Add a new question to the system",
@@ -673,6 +774,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "requests.AnswerRequest": {
+            "type": "object",
+            "properties": {
+                "question_id": {
+                    "type": "integer"
+                },
+                "selected_option": {
+                    "type": "integer"
+                }
+            }
+        },
         "requests.CreateQuestionRequest": {
             "type": "object",
             "properties": {
@@ -734,6 +846,20 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.SubmitAnswersRequest": {
+            "type": "object",
+            "properties": {
+                "responses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.AnswerRequest"
+                    }
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "requests.UpdateUserRequest": {
             "type": "object",
             "properties": {
@@ -776,6 +902,26 @@ const docTemplate = `{
                 },
                 "question": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.SubmitAnswersResponse": {
+            "type": "object",
+            "properties": {
+                "correct_answers": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "total_questions": {
+                    "type": "integer"
+                },
+                "trivia_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

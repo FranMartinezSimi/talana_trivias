@@ -16,10 +16,3 @@ type AnswerRequest struct {
 	QuestionID     uint `json:"question_id"`
 	SelectedOption uint `json:"selected_option"`
 }
-
-type SaveParticipationRequest struct {
-	UserID   uint            `json:"user_id"`
-	TriviaID uint            `json:"trivia_id"`
-	Score    int             `json:"score"`
-	Answers  []AnswerRequest `json:"answers"`
-}
