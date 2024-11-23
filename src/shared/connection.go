@@ -26,9 +26,9 @@ func Init() *gorm.DB {
 func migration(db *gorm.DB) {
 	err := db.AutoMigrate(
 		&models.UserModel{},
-		&models.TriviaModel{},
-		&models.QuestionModel{},
-		&models.OptionModel{},
+		&models.Trivia{},
+		&models.Question{},
+		&models.Option{},
 		&models.Participation{},
 		&models.Answer{},
 	)

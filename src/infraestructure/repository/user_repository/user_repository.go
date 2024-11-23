@@ -51,7 +51,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id uint) (*models.UserMod
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *models.UserModel) error {
-	log.WithContext(ctx).Println("creating user")
+	log.WithContext(ctx).Println("creating user in repository")
 
 	log.Info("creating user")
 
