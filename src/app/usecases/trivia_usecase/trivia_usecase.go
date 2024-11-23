@@ -6,6 +6,7 @@ import (
 	"talana_prueba_tecnica/src/entity/models"
 	"talana_prueba_tecnica/src/entity/requests"
 	"talana_prueba_tecnica/src/entity/responses"
+	questionsrepository "talana_prueba_tecnica/src/infraestructure/repository/questions_repository"
 	triviarepository "talana_prueba_tecnica/src/infraestructure/repository/trivia_repository"
 	repository "talana_prueba_tecnica/src/infraestructure/repository/user_repository"
 
@@ -15,15 +16,18 @@ import (
 type TriviaUseCase struct {
 	triviaRepository triviarepository.TriviaRepositoryInterface
 	userRepository   repository.UserRepositoryInterface
+	questionRepo     questionsrepository.QuestionRepositoryInterface
 }
 
 func NewTriviaUseCase(
 	triviaRepository triviarepository.TriviaRepositoryInterface,
 	userRepository repository.UserRepositoryInterface,
+	questionRepo questionsrepository.QuestionRepositoryInterface,
 ) *TriviaUseCase {
 	return &TriviaUseCase{
 		triviaRepository: triviaRepository,
 		userRepository:   userRepository,
+		questionRepo:     questionRepo,
 	}
 }
 
@@ -36,13 +40,28 @@ func (u *TriviaUseCase) CreateTrivia(ctx context.Context, req *requests.CreateTr
 		Description: req.Description,
 	}
 
+	var questions []models.Question
 	for _, questionID := range req.QuestionIDs {
-		trivia.Questions = append(trivia.Questions, models.Question{ID: questionID})
+		question, err := u.questionRepo.FindByID(ctx, questionID)
+		if err != nil {
+			log.WithError(err).Errorf("Question ID %d not found", questionID)
+			return errors.New("invalid question ID")
+		}
+		// Solo añadir la pregunta, no modificarla
+		questions = append(questions, *question)
 	}
+	trivia.Questions = questions
 
+	var users []models.UserModel
 	for _, userID := range req.UserIDs {
-		trivia.Users = append(trivia.Users, models.UserModel{ID: userID})
+		user, err := u.userRepository.FindByID(ctx, userID)
+		if err != nil {
+			log.WithError(err).Errorf("User ID %d not found", userID)
+			return errors.New("invalid user ID")
+		}
+		users = append(users, *user)
 	}
+	trivia.Users = users
 
 	err := u.triviaRepository.CreateTrivia(ctx, trivia)
 	if err != nil {

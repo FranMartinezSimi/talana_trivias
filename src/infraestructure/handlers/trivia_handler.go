@@ -88,6 +88,14 @@ func (h *TriviaHandler) CreateTrivia(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
+	if len(req.QuestionIDs) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "At least one question is required"})
+	}
+
+	if len(req.UserIDs) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "At least one user is required"})
+	}
+
 	if err := h.useCase.CreateTrivia(ctx.Context(), &req); err != nil {
 		log.Errorf("Error creating trivia: %v", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

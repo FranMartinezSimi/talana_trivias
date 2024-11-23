@@ -1,9 +1,6 @@
 package models
 
-import "gorm.io/gorm"
-
 type Question struct {
-	gorm.Model
 	ID            uint     `gorm:"primaryKey,autoIncrement,not null"`
 	Question      string   `gorm:"size:255;not null"`
 	Options       []Option `gorm:"foreignKey:QuestionID"`

@@ -20,14 +20,24 @@ func (r *TriviaRepository) CreateTrivia(ctx context.Context, trivia *models.Triv
 	log := logrus.WithContext(ctx)
 	log.Info("Creating trivia")
 
-	err := r.db.Create(trivia)
-	if err.Error != nil {
-		log.WithError(err.Error).Error("Error creating trivia")
-		return err.Error
-	}
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(trivia).Error; err != nil {
+			log.WithError(err).Error("Error creating trivia")
+			return err
+		}
 
-	log.Info("Trivia created")
-	return nil
+		if err := tx.Model(trivia).Association("Questions").Replace(trivia.Questions); err != nil {
+			log.WithError(err).Error("Error associating questions")
+			return err
+		}
+
+		if err := tx.Model(trivia).Association("Users").Replace(trivia.Users); err != nil {
+			log.WithError(err).Error("Error associating users")
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (r *TriviaRepository) FindAll(ctx context.Context) ([]models.Trivia, error) {
@@ -35,7 +45,7 @@ func (r *TriviaRepository) FindAll(ctx context.Context) ([]models.Trivia, error)
 	log.Info("Finding all trivias")
 
 	var trivias []models.Trivia
-	err := r.db.Preload("Questions").Preload("Users").Find(&trivias)
+	err := r.db.Preload("Questions").Preload("Users").Preload("Questions.Options").Find(&trivias)
 	if err.Error != nil {
 		log.WithError(err.Error).Error("Error finding all trivias")
 		return nil, err.Error
@@ -50,7 +60,12 @@ func (r *TriviaRepository) FindByID(ctx context.Context, id uint) (models.Trivia
 	log.Infof("Finding trivia by ID: %d", id)
 
 	var trivia models.Trivia
-	err := r.db.Preload("Questions").Preload("Users").First(&trivia, id)
+	err := r.db.WithContext(ctx).
+		Preload("Questions").
+		Preload("Questions.Options").
+		Preload("Users").
+		First(&trivia, id)
+
 	if err.Error != nil {
 		log.WithError(err.Error).Error("Error finding trivia by ID")
 		return models.Trivia{}, err.Error
