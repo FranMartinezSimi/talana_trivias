@@ -26,11 +26,11 @@ func Init() *gorm.DB {
 func migration(db *gorm.DB) {
 	err := db.AutoMigrate(
 		&models.UserModel{},
-		&models.TriviaModel{},
-		&models.QuestionModel{},
-		&models.AnswerModel{},
-		&models.ScoreModel{},
-		&models.TriviaQuestionsModel{},
+		&models.Trivia{},
+		&models.Question{},
+		&models.Option{},
+		&models.Participation{},
+		&models.Answer{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)

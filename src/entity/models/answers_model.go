@@ -1,11 +1,9 @@
 package models
 
-import "gorm.io/gorm"
-
-type AnswerModel struct {
-	gorm.Model
-	Value      string `gorm:"size:255;not null"`
-	IsCorrect  bool   `gorm:"default:false"`
-	QuestionID uint   `gorm:"not null"`
-	CreatedAt  int64  `gorm:"autoCreateTime"`
+type Answer struct {
+	ID              uint `gorm:"primaryKey"`
+	ParticipationID uint `gorm:"not null"`
+	QuestionID      uint `gorm:"not null"`
+	SelectedOption  uint `gorm:"not null"`
+	IsCorrect       bool `gorm:"not null"`
 }

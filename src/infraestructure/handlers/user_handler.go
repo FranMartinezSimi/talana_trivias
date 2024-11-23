@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"strconv"
-	"talana_prueba_tecnica/src/app/usecases"
+	usecases "talana_prueba_tecnica/src/app/usecases/user_usecase"
 	"talana_prueba_tecnica/src/entity/requests"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,10 +10,10 @@ import (
 )
 
 type UserHandler struct {
-	usecase usecases.UserUseCase
+	usecase usecases.UserUseCaseInterface
 }
 
-func NewUserHandler(usecase usecases.UserUseCase) UserHandler {
+func NewUserHandler(usecase usecases.UserUseCaseInterface) UserHandler {
 	return UserHandler{usecase: usecase}
 }
 
@@ -23,7 +23,7 @@ func (h *UserHandler) GetAllUsers(ctx *fiber.Ctx) error {
 
 	result, err := h.usecase.FindAll(ctx.Context())
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Error getting all users: %v", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 

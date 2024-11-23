@@ -1,15 +1,9 @@
 package models
 
-import (
-	"gorm.io/gorm"
-	"time"
-)
-
-type TriviaModel struct {
-	gorm.Model
-	Title     string          `gorm:"size:50;not null"`
-	Enabled   bool            `gorm:"default:true"`
-	UserID    uint            `gorm:"not null"`
-	Questions []QuestionModel `gorm:"foreignKey:TriviaID"` // Uno a muchos
-	CreatedAt time.Time       `gorm:"autoCreateTime"`
+type Trivia struct {
+	ID          uint        `gorm:"primaryKey"`
+	Name        string      `gorm:"not null"`
+	Description string      `gorm:"not null"`
+	Questions   []Question  `gorm:"many2many:trivia_questions;"`
+	Users       []UserModel `gorm:"many2many:trivia_users;"`
 }
