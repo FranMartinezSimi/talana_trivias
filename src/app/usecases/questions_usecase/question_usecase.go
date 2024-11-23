@@ -47,7 +47,7 @@ func (u *QuestionsUseCase) FindAll(ctx context.Context) ([]responses.QuestionRes
 			ID:            question.ID,
 			Question:      question.Question,
 			CorrectOption: question.CorrectOption,
-			Options:       optionsList, // Asignar la lista de opciones mapeadas
+			Options:       optionsList,
 			Difficulty:    question.Difficulty,
 		}
 
@@ -102,16 +102,20 @@ func (u *QuestionsUseCase) CreateQuestion(ctx context.Context, req *requests.Cre
 		return errors.New("invalid correct option index")
 	}
 
+	// Inicializar el slice de opciones sin make
+	var options []models.Option
+
+	// Crear las opciones directamente
+	for _, opt := range req.Options {
+		options = append(options, models.Option{Text: opt})
+	}
+
 	question := &models.Question{
 		Question:      req.Question,
 		Difficulty:    req.Difficulty,
 		Points:        req.Points,
 		CorrectOption: uint(req.CorrectOption),
-		Options:       make([]models.Option, len(req.Options)),
-	}
-
-	for _, opt := range req.Options {
-		question.Options = append(question.Options, models.Option{Text: opt})
+		Options:       options, // Asignar las opciones ya creadas
 	}
 
 	err := u.repository.CreateQuestion(ctx, question)

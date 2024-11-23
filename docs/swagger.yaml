@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  requests.AnswerRequest:
+    properties:
+      question_id:
+        type: integer
+      selected_option:
+        type: integer
+    type: object
   requests.CreateQuestionRequest:
     properties:
       correct_option:
@@ -40,6 +47,15 @@ definitions:
     - email
     - name
     type: object
+  requests.SubmitAnswersRequest:
+    properties:
+      responses:
+        items:
+          $ref: '#/definitions/requests.AnswerRequest'
+        type: array
+      user_id:
+        type: integer
+    type: object
   requests.UpdateUserRequest:
     properties:
       email:
@@ -68,6 +84,19 @@ definitions:
         type: array
       question:
         type: string
+    type: object
+  responses.SubmitAnswersResponse:
+    properties:
+      correct_answers:
+        type: integer
+      score:
+        type: integer
+      total_questions:
+        type: integer
+      trivia_id:
+        type: integer
+      user_id:
+        type: integer
     type: object
   responses.TriviaResponse:
     properties:
@@ -103,6 +132,74 @@ info:
   title: Talana prueba tecnica
   version: "1.0"
 paths:
+  /games/trivias/{id}/answers:
+    post:
+      consumes:
+      - application/json
+      description: Submit answers for a specific trivia and calculate the user's score
+      parameters:
+      - description: Trivia ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User answers
+        in: body
+        name: answers
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitAnswersRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User score and details
+          schema:
+            $ref: '#/definitions/responses.SubmitAnswersResponse'
+        "400":
+          description: Invalid request or trivia ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Submit answers for a trivia
+      tags:
+      - Games
+  /games/trivias/{id}/questions:
+    get:
+      description: Retrieve all questions for a specific trivia
+      parameters:
+      - description: Trivia ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Questions for the trivia
+          schema:
+            items:
+              $ref: '#/definitions/responses.QuestionResponse'
+            type: array
+        "400":
+          description: Invalid trivia ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get questions for a trivia
+      tags:
+      - Games
   /questions:
     post:
       consumes:

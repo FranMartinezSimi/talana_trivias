@@ -28,7 +28,7 @@ func main() {
 	module.UserModule(e)
 	module.QuestionModule(e)
 	module.TriviaModule(e)
-
+	module.GameModule(e)
 	err := e.Listen(":" + envs["PORT"])
 	if err != nil {
 		log.Fatalf("Error starting server: %v", err)

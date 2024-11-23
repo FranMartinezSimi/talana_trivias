@@ -2,6 +2,7 @@ package questionsrepository
 
 import (
 	"context"
+	"fmt"
 	"talana_prueba_tecnica/src/entity/models"
 
 	"github.com/sirupsen/logrus"
@@ -22,30 +23,31 @@ func (q *QuestionRepository) CreateQuestion(ctx context.Context, question *model
 	log := logrus.WithContext(ctx)
 	log.Info("creating question in repository")
 
-	err := q.db.Transaction(func(tx *gorm.DB) error {
+	return q.db.Transaction(func(tx *gorm.DB) error {
+		for _, option := range question.Options {
+			if option.Text == "" {
+				return fmt.Errorf("todas las opciones deben tener texto")
+			}
+		}
+
 		if err := tx.Create(question).Error; err != nil {
 			log.Error("Error creating question")
 			return err
 		}
 
 		if question.CorrectOption > 0 && len(question.Options) > 0 {
-			question.CorrectOption = question.Options[question.CorrectOption].ID
+			if int(question.CorrectOption) >= len(question.Options) {
+				return fmt.Errorf("índice de opción correcta inválido")
+			}
+
+			question.CorrectOption = question.Options[question.CorrectOption-1].ID
 			if err := tx.Save(question).Error; err != nil {
 				log.Error("Error updating question")
 				return err
 			}
 		}
-
 		return nil
 	})
-
-	if err != nil {
-		log.WithError(err).Error("Error creating question")
-		return err
-	}
-
-	log.Info("question created")
-	return nil
 }
 
 func (q *QuestionRepository) FindAll(ctx context.Context) ([]models.Question, error) {
@@ -56,7 +58,7 @@ func (q *QuestionRepository) FindAll(ctx context.Context) ([]models.Question, er
 
 	log.Info("finding all questions")
 
-	res := q.db.WithContext(ctx).Find(&questions)
+	res := q.db.WithContext(ctx).Preload("Options").Find(&questions)
 	if res.Error != nil {
 		log.Error("Error finding all questions")
 		return nil, res.Error
@@ -74,7 +76,7 @@ func (q *QuestionRepository) FindByID(ctx context.Context, id uint) (*models.Que
 
 	log.Info("finding question by id")
 
-	res := q.db.WithContext(ctx).First(&question, id)
+	res := q.db.WithContext(ctx).Preload("Options").First(&question, id)
 	if res.Error != nil {
 		log.Error("Error finding question by id")
 		return nil, res.Error
