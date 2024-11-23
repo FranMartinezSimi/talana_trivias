@@ -72,6 +72,8 @@ func (u *GameUseCase) SubmitAnswers(ctx context.Context, triviaID uint, req *req
 
 	var score int
 	var correctAnswers int
+	var answers []*models.Answer
+
 	for _, response := range req.Responses {
 		question, err := u.questionRepo.FindByID(ctx, response.QuestionID)
 		if err != nil {
@@ -92,15 +94,11 @@ func (u *GameUseCase) SubmitAnswers(ctx context.Context, triviaID uint, req *req
 			}
 		}
 
-		playerAnswer := &models.Answer{
+		answers = append(answers, &models.Answer{
 			QuestionID:     response.QuestionID,
 			SelectedOption: response.SelectedOption,
 			IsCorrect:      isCorrect,
-		}
-		if err := u.repository.SaveAnswer(ctx, playerAnswer); err != nil {
-			log.WithError(err).Errorf("Error saving answer for question ID %d", response.QuestionID)
-			return responses.SubmitAnswersResponse{}, err
-		}
+		})
 	}
 
 	participation := &models.Participation{
@@ -111,6 +109,14 @@ func (u *GameUseCase) SubmitAnswers(ctx context.Context, triviaID uint, req *req
 	if err := u.triviaRepo.SaveParticipation(ctx, participation); err != nil {
 		log.WithError(err).Error("Error saving participation")
 		return responses.SubmitAnswersResponse{}, err
+	}
+
+	for _, answer := range answers {
+		answer.ParticipationID = participation.ID
+		if err := u.repository.SaveAnswer(ctx, answer); err != nil {
+			log.WithError(err).Errorf("Error saving answer for question ID %d", answer.QuestionID)
+			return responses.SubmitAnswersResponse{}, err
+		}
 	}
 
 	log.Infof("Answers submitted successfully with score: %d", score)

@@ -33,15 +33,14 @@ func (r *GameRepository) GetQuestionsForTrivia(ctx context.Context, triviaID uin
 
 func (r *GameRepository) SaveAnswer(ctx context.Context, answer *models.Answer) error {
 	log := logrus.WithContext(ctx)
-	log.Infof("SaveAnswer: answer: %v", answer)
+	log.Info("Saving answer")
 
-	err := r.db.Create(answer).Error
-	if err != nil {
-		log.Errorf("SaveAnswer: %v", err)
+	if err := r.db.WithContext(ctx).Create(answer).Error; err != nil {
+		log.WithError(err).Error("Error saving answer")
 		return err
 	}
 
-	log.Info("SaveAnswer: success")
+	log.Info("Successfully saved answer")
 	return nil
 }
 
