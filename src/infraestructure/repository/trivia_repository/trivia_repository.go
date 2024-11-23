@@ -132,43 +132,6 @@ func (r *TriviaRepository) FindQuestionByID(ctx context.Context, questionID uint
 	return question, nil
 }
 
-func (r *TriviaRepository) AssignUser(ctx context.Context, triviaID, userID uint) error {
-	log := logrus.WithContext(ctx)
-	log.Infof("Assigning user ID: %d to trivia ID: %d", userID, triviaID)
-
-	triviaUser := &models.TriviaUser{
-		TriviaID: triviaID,
-		UserID:   userID,
-	}
-
-	err := r.db.Create(triviaUser).Error
-	if err != nil {
-		log.WithError(err).Error("Error assigning user to trivia")
-		return err
-	}
-
-	log.Info("User assigned to trivia successfully")
-	return nil
-}
-
-func (r *TriviaRepository) GetTriviaRenking(ctx context.Context, triviaID uint) ([]models.Ranking, error) {
-	log := logrus.WithContext(ctx)
-	log.Infof("Getting ranking for trivia ID: %d", triviaID)
-
-	var ranking []models.Ranking
-	err := r.db.Table("participations").Select("user_id, sum(score) as score").
-		Where("trivia_id = ?", triviaID).
-		Group("user_id").
-		Order("score desc").Scan(&ranking).Error
-	if err != nil {
-		log.WithError(err).Error("Error getting ranking")
-		return nil, err
-	}
-
-	log.Info("Ranking retrieved successfully")
-	return ranking, nil
-}
-
 func (r *TriviaRepository) AssignUserToTrivia(ctx context.Context, triviaID uint, userID uint) error {
 	log := logrus.WithContext(ctx)
 	log.Infof("Assigning user ID %d to trivia ID %d", userID, triviaID)

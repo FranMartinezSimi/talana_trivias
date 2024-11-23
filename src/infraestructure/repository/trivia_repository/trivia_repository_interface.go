@@ -15,6 +15,5 @@ type TriviaRepositoryInterface interface {
 	SaveParticipation(ctx context.Context, participation *models.Participation) error
 	GetUserScore(ctx context.Context, triviaID, userID uint) (models.Participation, error)
 	AssignUserToTrivia(ctx context.Context, TriviaID, UserID uint) error
-	AssignUser(ctx context.Context, triviaID, userID uint) error
 	GetTriviaRanking(ctx context.Context, triviaID uint) ([]models.Ranking, error)
 }
