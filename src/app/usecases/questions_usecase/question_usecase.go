@@ -19,13 +19,13 @@ func NewQuestionsUseCase(repository questionsrepository.QuestionRepositoryInterf
 	return &QuestionsUseCase{
 		repository: repository,
 	}
+
 }
 func (u *QuestionsUseCase) FindAll(ctx context.Context) ([]responses.QuestionResponse, error) {
 	log := logrus.WithContext(ctx)
 	log.Info("Get all questions usecase")
 
 	result, err := u.repository.FindAll(ctx)
-
 	if err != nil {
 		log.Errorf("Error: %v", err)
 		return nil, err
@@ -35,16 +35,9 @@ func (u *QuestionsUseCase) FindAll(ctx context.Context) ([]responses.QuestionRes
 	var questionsList []responses.QuestionResponse
 
 	for _, question := range result {
-		var optionsList []struct {
-			ID     uint   `json:"id"`
-			Option string `json:"option"`
-		}
-
+		var optionsList []responses.OptionResponse
 		for _, option := range question.Options {
-			optionsList = append(optionsList, struct {
-				ID     uint   `json:"id"`
-				Option string `json:"option"`
-			}{
+			optionsList = append(optionsList, responses.OptionResponse{
 				ID:     option.ID,
 				Option: option.Text,
 			})
@@ -54,7 +47,7 @@ func (u *QuestionsUseCase) FindAll(ctx context.Context) ([]responses.QuestionRes
 			ID:            question.ID,
 			Question:      question.Question,
 			CorrectOption: question.CorrectOption,
-			Options:       optionsList,
+			Options:       optionsList, // Asignar la lista de opciones mapeadas
 			Difficulty:    question.Difficulty,
 		}
 
@@ -62,12 +55,11 @@ func (u *QuestionsUseCase) FindAll(ctx context.Context) ([]responses.QuestionRes
 	}
 
 	return questionsList, nil
-
 }
 
 func (u *QuestionsUseCase) FindByID(ctx context.Context, id uint) (responses.QuestionResponse, error) {
 	log := logrus.WithContext(ctx)
-	log.Info("Get question usecase")
+	log.Infof("Get question by ID: %d usecase", id)
 
 	result, err := u.repository.FindByID(ctx, id)
 	if err != nil {
@@ -76,16 +68,10 @@ func (u *QuestionsUseCase) FindByID(ctx context.Context, id uint) (responses.Que
 	}
 
 	log.Info("Question found")
-	var optionsList []struct {
-		ID     uint   `json:"id"`
-		Option string `json:"option"`
-	}
 
+	var optionsList []responses.OptionResponse
 	for _, option := range result.Options {
-		optionsList = append(optionsList, struct {
-			ID     uint   `json:"id"`
-			Option string `json:"option"`
-		}{
+		optionsList = append(optionsList, responses.OptionResponse{
 			ID:     option.ID,
 			Option: option.Text,
 		})
@@ -201,28 +187,21 @@ func (u *QuestionsUseCase) DeleteQuestion(ctx context.Context, id uint) error {
 
 func (u *QuestionsUseCase) FullTextSearch(ctx context.Context, query string) ([]responses.QuestionResponse, error) {
 	log := logrus.WithContext(ctx)
-	log.Info("Full text search usecase")
+	log.Infof("Performing full text search with query: %s", query)
 
 	result, err := u.repository.FullTextSearch(ctx, query)
 	if err != nil {
-		log.Errorf("Error: %v", err)
+		log.WithError(err).Error("Error during full text search in repository")
 		return nil, err
 	}
 
-	log.Info("Questions found")
+	log.Infof("Questions found for query: %s", query)
 	var questionsList []responses.QuestionResponse
 
 	for _, question := range result {
-		var optionsList []struct {
-			ID     uint   `json:"id"`
-			Option string `json:"option"`
-		}
-
+		var optionsList []responses.OptionResponse
 		for _, option := range question.Options {
-			optionsList = append(optionsList, struct {
-				ID     uint   `json:"id"`
-				Option string `json:"option"`
-			}{
+			optionsList = append(optionsList, responses.OptionResponse{
 				ID:     option.ID,
 				Option: option.Text,
 			})

@@ -16,6 +16,7 @@ func main() {
 
 	module.UserModule(e)
 	module.QuestionModule(e)
+	module.TriviaModule(e)
 
 	err := e.Listen(":" + envs["PORT"])
 	if err != nil {
