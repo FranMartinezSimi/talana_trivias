@@ -102,10 +102,8 @@ func (u *QuestionsUseCase) CreateQuestion(ctx context.Context, req *requests.Cre
 		return errors.New("invalid correct option index")
 	}
 
-	// Inicializar el slice de opciones sin make
 	var options []models.Option
 
-	// Crear las opciones directamente
 	for _, opt := range req.Options {
 		options = append(options, models.Option{Text: opt})
 	}
@@ -115,7 +113,7 @@ func (u *QuestionsUseCase) CreateQuestion(ctx context.Context, req *requests.Cre
 		Difficulty:    req.Difficulty,
 		Points:        req.Points,
 		CorrectOption: uint(req.CorrectOption),
-		Options:       options, // Asignar las opciones ya creadas
+		Options:       options,
 	}
 
 	err := u.repository.CreateQuestion(ctx, question)
