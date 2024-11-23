@@ -23,7 +23,7 @@ func (h *UserHandler) GetAllUsers(ctx *fiber.Ctx) error {
 
 	result, err := h.usecase.FindAll(ctx.Context())
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Error getting all users: %v", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 

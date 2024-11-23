@@ -90,15 +90,15 @@ func (q *QuestionRepository) FullTextSearch(ctx context.Context, query string) (
 
 	var questions []models.Question
 
-	log.Info("full text search")
+	err := q.db.Preload("Options").
+		Where("to_tsvector('english', text) @@ plainto_tsquery(?) OR EXISTS "+
+			"(SELECT 1 FROM options WHERE options.question_id = questions.id AND to_tsvector('english', text) @@ plainto_tsquery(?))", query, query).
+		Find(&questions).Error
 
-	res := q.db.WithContext(ctx).Where("MATCH(question) AGAINST (?)", query).Find(&questions)
-	if res.Error != nil {
-		log.Error("Error full text search")
-		return nil, res.Error
+	if err != nil {
+		return nil, err
 	}
 
-	log.WithError(res.Error).Info("full text search")
 	return questions, nil
 }
 

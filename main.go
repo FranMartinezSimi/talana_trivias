@@ -15,6 +15,7 @@ func main() {
 	shared.Init()
 
 	module.UserModule(e)
+	module.QuestionModule(e)
 
 	err := e.Listen(":" + envs["PORT"])
 	if err != nil {
