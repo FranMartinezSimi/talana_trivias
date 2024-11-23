@@ -2,7 +2,7 @@ package questionsrepository
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"talana_prueba_tecnica/src/entity/models"
 
 	"github.com/sirupsen/logrus"
@@ -26,7 +26,9 @@ func (q *QuestionRepository) CreateQuestion(ctx context.Context, question *model
 	return q.db.Transaction(func(tx *gorm.DB) error {
 		for _, option := range question.Options {
 			if option.Text == "" {
-				return fmt.Errorf("todas las opciones deben tener texto")
+				// esto le solicite ayuda a claude, tenia respuestas duplicadas y no sabia como solucionarlo
+				log.Errorf("all options must have text")
+				return errors.New("all options must have text")
 			}
 		}
 
@@ -37,7 +39,8 @@ func (q *QuestionRepository) CreateQuestion(ctx context.Context, question *model
 
 		if question.CorrectOption > 0 && len(question.Options) > 0 {
 			if int(question.CorrectOption) >= len(question.Options) {
-				return fmt.Errorf("índice de opción correcta inválido")
+				log.Errorf("the correct option index is invalid")
+				return errors.New("the correct option index is invalid")
 			}
 
 			question.CorrectOption = question.Options[question.CorrectOption-1].ID
@@ -88,19 +91,28 @@ func (q *QuestionRepository) FindByID(ctx context.Context, id uint) (*models.Que
 
 func (q *QuestionRepository) FullTextSearch(ctx context.Context, query string) ([]models.Question, error) {
 	log := logrus.WithContext(ctx)
-	log.Println("full text search")
+	log.Info("Starting full text search with query: ", query)
 
 	var questions []models.Question
 
 	err := q.db.Preload("Options").
-		Where("to_tsvector('english', text) @@ plainto_tsquery(?) OR EXISTS "+
-			"(SELECT 1 FROM options WHERE options.question_id = questions.id AND to_tsvector('english', text) @@ plainto_tsquery(?))", query, query).
+		Select("questions.*, "+
+			"ts_rank(to_tsvector('english', question), plainto_tsquery(?)) as question_rank, "+
+			"COALESCE((SELECT MAX(ts_rank(to_tsvector('english', text), plainto_tsquery(?))) "+
+			"FROM options WHERE options.question_id = questions.id), 0) as option_rank",
+			query, query).
+		Where("to_tsvector('english', question) @@ plainto_tsquery(?) OR EXISTS "+
+			"(SELECT 1 FROM options WHERE options.question_id = questions.id AND to_tsvector('english', text) @@ plainto_tsquery(?))",
+			query, query).
+		Order("question_rank + option_rank DESC").
 		Find(&questions).Error
 
 	if err != nil {
+		log.WithError(err).Error("Error performing full text search")
 		return nil, err
 	}
 
+	log.Info("Full text search completed, found ", len(questions), " results")
 	return questions, nil
 }
 
