@@ -8,7 +8,7 @@ Este proyecto es una API REST que permite realizar operaciones en un juego de tr
 * correo: juanfmartinezsimi@outlook.com | jua.martinez@outlook.es
 * telefono: +56 9 6787 2837
 
-- Golang 1.23
+- Golang 1.22
 - PostgreSQL
 - gorm ORM
 - docker
