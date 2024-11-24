@@ -18,8 +18,6 @@ Este proyecto es una API REST que permite realizar operaciones en un juego de tr
 repositorio url: [Repositorio de github](https://github.com/FranMartinezSimi/talana_trivias)
 rama para evaluacion: ***MAIN***
 
-> seguire desarrollando el proyecto en una rama independiente o local para no afectar la prueba
-
 
 variables de entorno:
 
