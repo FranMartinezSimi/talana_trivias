@@ -34,7 +34,6 @@ variables de entorno:
 
 #### SQL para la creación de la base de datos
 ```sql
-> seguire desarrollando el proyecto en una rama independiente
 -- Create user_models table
 CREATE TABLE user_models (
     id SERIAL PRIMARY KEY,
